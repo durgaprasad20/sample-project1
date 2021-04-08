@@ -46,3 +46,26 @@ resource "azurerm_managed_disk" "example" {
   disk_size_gb         = var.size
 
 }
+resource "random_id" "rid" {
+  keepers = {
+    # Generate a new id each time we switch to a new AMI id
+    resource_group=azurerm_resource_group.example.name
+  }
+
+  byte_length = 8
+}
+
+resource "azurerm_storage_account" "example" {
+  name                     = "storages${random_id.rid.hex}"
+  resource_group_name      = azurerm_resource_group.example.name
+  location                 = azurerm_resource_group.example.location
+  account_tier             = "Standard"
+  account_replication_type = "RAGRS"
+
+}
+
+resource "azurerm_storage_container" "example" {
+  name                  = "container1"
+  storage_account_name  = azurerm_storage_account.example.name
+  container_access_type = "private"
+}
